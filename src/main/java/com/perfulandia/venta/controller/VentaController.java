@@ -2,52 +2,46 @@ package com.perfulandia.venta.controller;
 
 import com.perfulandia.venta.model.Venta;
 import com.perfulandia.venta.service.VentaService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/ventas")
-@RequiredArgsConstructor
+@RequestMapping("/ventas")
 public class VentaController {
 
     private final VentaService ventaService;
 
-    @GetMapping("/listartodo")
-    public List<Venta> listarVentas() {
-        return ventaService.listarTodas();
+    public VentaController(VentaService ventaService) {
+        this.ventaService = ventaService;
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<Venta> obtenerVenta(@PathVariable Long id) {
-        return ventaService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @PostMapping
+    public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
+        Venta venta = new Venta();
+        venta.setCliente((String) payload.get("cliente"));
+        venta.setTotal(payload.get("total") != null ? Double.valueOf(payload.get("total").toString()) : 0.0);
 
-    @PostMapping("/agregar")
-    public ResponseEntity<Venta> crearVenta(@RequestBody Venta venta) {
-        return ResponseEntity.ok(ventaService.guardar(venta));
-    }
+        // ✅ Asignar sucursalId si está presente en el payload
+        if (payload.get("sucursalId") != null) {
+            venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
+        }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Venta> actualizarVenta(@PathVariable Long id, @RequestBody Venta venta) {
-        return ventaService.actualizar(id, venta)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+        // ✅ Convertir lista de promociones de forma segura
+        Object promocionesObj = payload.get("promociones");
+        List<String> codigosPromocion;
+        if (promocionesObj instanceof List<?>) {
+            codigosPromocion = ((List<?>) promocionesObj).stream()
+                    .filter(item -> item instanceof String)
+                    .map(item -> (String) item)
+                    .toList();
+        } else {
+            codigosPromocion = List.of();
+        }
 
-    @DeleteMapping("eliminar/{id}")
-    public ResponseEntity<Void> eliminarVenta(@PathVariable Long id) {
-        return ventaService.eliminar(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/prueba")
-    public String prueba() {
-        return "¡Funciona!";
+        Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
+        return ResponseEntity.ok(ventaCreada);
     }
 }

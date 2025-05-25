@@ -1,0 +1,29 @@
+package com.perfulandia.venta.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Promocion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String codigo;
+
+    private String tipo; // PORCENTAJE, MONTO_FIJO
+
+    private Double valor;
+
+    private LocalDateTime fechaInicio;
+
+    private LocalDateTime fechaFin;
+
+    private boolean activa;
+}
