@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
+        <version>3.3.10</version>  <!-- Versión compatible con Spring Cloud 2023.0.1 -->
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -79,7 +79,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2023.0.1</version>
+                <version>2023.0.1</version> <!-- Versión que usas -->
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
