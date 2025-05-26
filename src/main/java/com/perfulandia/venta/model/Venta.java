@@ -27,6 +27,8 @@ public class Venta {
 
     private Long sucursalId; // ✅ Campo necesario para validar con Feign
 
+    private Long clienteId;
+
     @ManyToMany
     @JoinTable(
         name = "venta_promocion",
