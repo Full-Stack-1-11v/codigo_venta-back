@@ -36,4 +36,16 @@ public class Venta {
         inverseJoinColumns = @JoinColumn(name = "promocion_id")
     )
     private List<Promocion> promocionesAplicadas;
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
+    }
+
+    public void setSucursalId(Long sucursalId) {
+        this.sucursalId = sucursalId;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
 }
