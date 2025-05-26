@@ -19,29 +19,35 @@ public class VentaController {
     }
 
     @PostMapping
-    public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
-        Venta venta = new Venta();
-        venta.setCliente((String) payload.get("cliente"));
-        venta.setTotal(payload.get("total") != null ? Double.valueOf(payload.get("total").toString()) : 0.0);
+public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
+    Venta venta = new Venta();
 
-        // ✅ Asignar sucursalId si está presente en el payload
-        if (payload.get("sucursalId") != null) {
-            venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
-        }
-
-        // ✅ Convertir lista de promociones de forma segura
-        Object promocionesObj = payload.get("promociones");
-        List<String> codigosPromocion;
-        if (promocionesObj instanceof List<?>) {
-            codigosPromocion = ((List<?>) promocionesObj).stream()
-                    .filter(item -> item instanceof String)
-                    .map(item -> (String) item)
-                    .toList();
-        } else {
-            codigosPromocion = List.of();
-        }
-
-        Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
-        return ResponseEntity.ok(ventaCreada);
+    // Cambiar "cliente" (String) por "clienteId" (Long)
+    if (payload.get("clienteId") != null) {
+        venta.setClienteId(Long.valueOf(payload.get("clienteId").toString()));
+    } else {
+        // opcional: lanzar error o manejar si no viene clienteId
+        throw new IllegalArgumentException("clienteId es obligatorio");
     }
+
+    venta.setTotal(payload.get("total") != null ? Double.valueOf(payload.get("total").toString()) : 0.0);
+
+    if (payload.get("sucursalId") != null) {
+        venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
+    }
+
+    Object promocionesObj = payload.get("promociones");
+    List<String> codigosPromocion;
+    if (promocionesObj instanceof List<?>) {
+        codigosPromocion = ((List<?>) promocionesObj).stream()
+                .filter(item -> item instanceof String)
+                .map(item -> (String) item)
+                .toList();
+    } else {
+        codigosPromocion = List.of();
+    }
+
+    Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
+    return ResponseEntity.ok(ventaCreada);
+}
 }
