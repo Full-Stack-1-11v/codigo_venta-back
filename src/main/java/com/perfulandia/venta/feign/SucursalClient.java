@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.perfulandia.venta.dto.SucursalDTO;
 
-@FeignClient(name = "sucursal", url = "http://localhost:8082")
+@FeignClient(name = "sucursal", url = "https://codigo-sucursal-back.onrender.com")
 public interface SucursalClient {
 
     @GetMapping("/sucursales/{id}")

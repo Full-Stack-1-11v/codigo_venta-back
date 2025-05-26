@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import com.perfulandia.venta.dto.ProductoStockDTO;
 import com.perfulandia.venta.dto.ReducirStockDTO;
 
-@FeignClient(name = "inventario", url = "http://localhost:8081")
+@FeignClient(name = "inventario", url = "https://codigo-inventario-back-1.onrender.com")
 public interface InventarioClient {
 
     @GetMapping("/inventario/producto/{id}")
