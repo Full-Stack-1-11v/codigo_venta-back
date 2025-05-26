@@ -1,9 +1,8 @@
-# Etapa 1: construir el JAR
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Etapa 1: usar imagen con Maven incluido
+FROM maven:3.9.4-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
-RUN chmod +x mvnw
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Etapa 2: usar solo el JAR generado
 FROM eclipse-temurin:17-jdk-alpine
