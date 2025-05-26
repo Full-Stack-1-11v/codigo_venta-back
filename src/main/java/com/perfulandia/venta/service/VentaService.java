@@ -26,7 +26,6 @@ public class VentaService {
     }
 
     public Venta crearVenta(Venta venta, List<String> codigosPromocion) {
-        // ✅ Validar sucursal
         validarSucursal(venta.getSucursalId());
 
         venta.setFecha(LocalDateTime.now());
@@ -63,4 +62,15 @@ public class VentaService {
             throw new RuntimeException("Sucursal inválida o inactiva");
         }
     }
+
+    // --- Método para eliminar venta por id ---
+    public boolean eliminarVenta(Long id) {
+        if (ventaRepository.existsById(id)) {
+            ventaRepository.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
