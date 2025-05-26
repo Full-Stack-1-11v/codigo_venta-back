@@ -19,14 +19,24 @@ public class VentaService {
     private final PromocionRepository promocionRepository;
     private final SucursalClient sucursalClient;
 
-    public VentaService(VentaRepository ventaRepository, PromocionRepository promocionRepository, SucursalClient sucursalClient) {
+    public VentaService(VentaRepository ventaRepository,
+                        PromocionRepository promocionRepository,
+                        SucursalClient sucursalClient) {
         this.ventaRepository = ventaRepository;
         this.promocionRepository = promocionRepository;
         this.sucursalClient = sucursalClient;
     }
 
     public Venta crearVenta(Venta venta, List<String> codigosPromocion) {
-        validarSucursal(venta.getSucursalId());
+        if (venta.getSucursalId() != null) {
+            try {
+                validarSucursal(venta.getSucursalId());
+            } catch (Exception e) {
+                System.out.println("Error al validar sucursal: " + e.getMessage());
+                // Puedes comentar esta línea si quieres que igual se cree la venta:
+                throw new RuntimeException("No se pudo validar la sucursal. Detalles: " + e.getMessage());
+            }
+        }
 
         venta.setFecha(LocalDateTime.now());
         venta.setEstado("PENDIENTE");
@@ -57,13 +67,25 @@ public class VentaService {
     }
 
     private void validarSucursal(Long sucursalId) {
-        SucursalDTO sucursal = sucursalClient.obtenerSucursalPorId(sucursalId);
-        if (sucursal == null || !sucursal.isActiva()) {
-            throw new RuntimeException("Sucursal inválida o inactiva");
+        try {
+            System.out.println("Llamando a sucursal con ID: " + sucursalId);
+            SucursalDTO sucursal = sucursalClient.obtenerSucursalPorId(sucursalId);
+    
+            if (sucursal == null || !sucursal.isActiva()) {
+                System.out.println("Sucursal inválida o inactiva.");
+                // Puedes continuar, o lanzar error controlado:
+                // throw new RuntimeException("Sucursal inválida o inactiva");
+            }
+        } catch (feign.FeignException.NotFound nf) {
+            System.out.println("Sucursal no encontrada. ID: " + sucursalId);
+            // No lanzamos excepción para permitir que el microservicio continúe funcionando
+        } catch (Exception e) {
+            System.out.println("Error general al validar sucursal: " + e.getMessage());
+            // Puedes decidir si lanzar una Runtime o seguir
         }
     }
+    
 
-    // --- Método para eliminar venta por id ---
     public boolean eliminarVenta(Long id) {
         if (ventaRepository.existsById(id)) {
             ventaRepository.deleteById(id);
@@ -72,5 +94,4 @@ public class VentaService {
             return false;
         }
     }
-
 }
