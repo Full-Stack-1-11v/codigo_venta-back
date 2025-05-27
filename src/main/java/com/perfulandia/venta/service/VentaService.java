@@ -94,4 +94,13 @@ public class VentaService {
             return false;
         }
     }
+
+    public List<Venta> obtenerVentasPorCliente(Long clienteId) {
+        return ventaRepository.findByClienteId(clienteId);
+    }
+    
+    public List<Venta> obtenerTodasLasVentas() {
+        return ventaRepository.findAll();
+    }
+    
 }
