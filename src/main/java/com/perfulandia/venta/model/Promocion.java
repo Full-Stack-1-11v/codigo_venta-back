@@ -15,6 +15,7 @@ public class Promocion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String codigo;
 
     private String tipo; // PORCENTAJE, MONTO_FIJO
