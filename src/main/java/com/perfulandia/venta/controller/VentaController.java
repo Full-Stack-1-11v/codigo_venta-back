@@ -18,36 +18,59 @@ public class VentaController {
         this.ventaService = ventaService;
     }
 
+    // POST /ventas
     @PostMapping
-public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
-    Venta venta = new Venta();
+    public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
+        Venta venta = new Venta();
 
-    // Cambiar "cliente" (String) por "clienteId" (Long)
-    if (payload.get("clienteId") != null) {
-        venta.setClienteId(Long.valueOf(payload.get("clienteId").toString()));
-    } else {
-        // opcional: lanzar error o manejar si no viene clienteId
-        throw new IllegalArgumentException("clienteId es obligatorio");
+        if (payload.get("clienteId") != null) {
+            venta.setClienteId(Long.valueOf(payload.get("clienteId").toString()));
+        } else {
+            throw new IllegalArgumentException("clienteId es obligatorio");
+        }
+
+        venta.setTotal(payload.get("total") != null ? Double.valueOf(payload.get("total").toString()) : 0.0);
+
+        if (payload.get("sucursalId") != null) {
+            venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
+        }
+
+        Object promocionesObj = payload.get("promociones");
+        List<String> codigosPromocion;
+        if (promocionesObj instanceof List<?>) {
+            codigosPromocion = ((List<?>) promocionesObj).stream()
+                    .filter(item -> item instanceof String)
+                    .map(item -> (String) item)
+                    .toList();
+        } else {
+            codigosPromocion = List.of();
+        }
+
+        Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
+        return ResponseEntity.ok(ventaCreada);
     }
 
-    venta.setTotal(payload.get("total") != null ? Double.valueOf(payload.get("total").toString()) : 0.0);
-
-    if (payload.get("sucursalId") != null) {
-        venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
+    // GET /ventas
+    @GetMapping
+    public ResponseEntity<List<Venta>> obtenerTodasLasVentas() {
+        List<Venta> ventas = ventaService.obtenerTodasLasVentas();
+        return ResponseEntity.ok(ventas);
     }
 
-    Object promocionesObj = payload.get("promociones");
-    List<String> codigosPromocion;
-    if (promocionesObj instanceof List<?>) {
-        codigosPromocion = ((List<?>) promocionesObj).stream()
-                .filter(item -> item instanceof String)
-                .map(item -> (String) item)
-                .toList();
-    } else {
-        codigosPromocion = List.of();
+    // GET /ventas/usuario/{id}
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<List<Venta>> obtenerVentasPorCliente(@PathVariable Long id) {
+        List<Venta> ventas = ventaService.obtenerVentasPorCliente(id);
+        if (ventas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(ventas);
     }
 
-    Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
-    return ResponseEntity.ok(ventaCreada);
-}
+    // DELETE /ventas/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarVenta(@PathVariable Long id) {
+        boolean eliminada = ventaService.eliminarVenta(id);
+        return eliminada ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 }
