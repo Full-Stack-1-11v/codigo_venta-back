@@ -33,7 +33,6 @@ public class VentaService {
                 validarSucursal(venta.getSucursalId());
             } catch (Exception e) {
                 System.out.println("Error al validar sucursal: " + e.getMessage());
-                // Puedes comentar esta línea si quieres que igual se cree la venta:
                 throw new RuntimeException("No se pudo validar la sucursal. Detalles: " + e.getMessage());
             }
         }
@@ -66,22 +65,22 @@ public class VentaService {
         return ventaRepository.save(venta);
     }
 
-    private void validarSucursal(Long sucursalId) {
+    // CAMBIADO A PUBLIC para permitir test unitario
+    public void validarSucursal(Long sucursalId) {
         try {
             System.out.println("Llamando a sucursal con ID: " + sucursalId);
             SucursalDTO sucursal = sucursalClient.obtenerSucursalPorId(sucursalId);
     
             if (sucursal == null || !sucursal.isActiva()) {
-                System.out.println("Sucursal inválida o inactiva.");
-                // Puedes continuar, o lanzar error controlado:
-                // throw new RuntimeException("Sucursal inválida o inactiva");
+                throw new RuntimeException("Sucursal inválida o inactiva");
             }
+    
         } catch (feign.FeignException.NotFound nf) {
             System.out.println("Sucursal no encontrada. ID: " + sucursalId);
-            // No lanzamos excepción para permitir que el microservicio continúe funcionando
+            throw new RuntimeException("Sucursal no encontrada");
         } catch (Exception e) {
             System.out.println("Error general al validar sucursal: " + e.getMessage());
-            // Puedes decidir si lanzar una Runtime o seguir
+            throw new RuntimeException("Error al validar sucursal");
         }
     }
     
@@ -98,9 +97,8 @@ public class VentaService {
     public List<Venta> obtenerVentasPorCliente(Long clienteId) {
         return ventaRepository.findByClienteId(clienteId);
     }
-    
+
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAll();
     }
-    
 }
