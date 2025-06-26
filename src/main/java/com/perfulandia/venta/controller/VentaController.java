@@ -1,26 +1,33 @@
 package com.perfulandia.venta.controller;
 
+import com.perfulandia.venta.assembler.VentaModelAssembler;
 import com.perfulandia.venta.model.Venta;
 import com.perfulandia.venta.service.VentaService;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/ventas")
 public class VentaController {
 
     private final VentaService ventaService;
+    private final VentaModelAssembler assembler;
 
-    public VentaController(VentaService ventaService) {
+    public VentaController(VentaService ventaService, VentaModelAssembler assembler) {
         this.ventaService = ventaService;
+        this.assembler = assembler;
     }
 
-    // POST /ventas
     @PostMapping
-    public ResponseEntity<Venta> crearVenta(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<EntityModel<Venta>> crearVenta(@RequestBody Map<String, Object> payload) {
         Venta venta = new Venta();
 
         if (payload.get("clienteId") != null) {
@@ -35,42 +42,47 @@ public class VentaController {
             venta.setSucursalId(Long.valueOf(payload.get("sucursalId").toString()));
         }
 
+        List<String> codigosPromocion = List.of();
         Object promocionesObj = payload.get("promociones");
-        List<String> codigosPromocion;
         if (promocionesObj instanceof List<?>) {
             codigosPromocion = ((List<?>) promocionesObj).stream()
                     .filter(item -> item instanceof String)
                     .map(item -> (String) item)
-                    .toList();
-        } else {
-            codigosPromocion = List.of();
+                    .collect(Collectors.toList());
         }
 
         Venta ventaCreada = ventaService.crearVenta(venta, codigosPromocion);
-        return ResponseEntity.ok(ventaCreada);
+        return ResponseEntity.ok(assembler.toModel(ventaCreada));
     }
 
-    // GET /ventas
+    @GetMapping("/{id}")
+    public EntityModel<Venta> getVentaPorId(@PathVariable Long id) {
+        Venta venta = ventaService.obtenerVentaPorId(id);
+        return assembler.toModel(venta);
+    }
+
     @GetMapping
-    public ResponseEntity<List<Venta>> obtenerTodasLasVentas() {
+    public CollectionModel<EntityModel<Venta>> getTodasLasVentas() {
         List<Venta> ventas = ventaService.obtenerTodasLasVentas();
-        return ResponseEntity.ok(ventas);
+
+        List<EntityModel<Venta>> recursos = ventas.stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(
+                recursos,
+                linkTo(methodOn(VentaController.class).getTodasLasVentas()).withSelfRel(),
+                linkTo(methodOn(VentaController.class).crearVenta(null)).withRel("crear")
+        );
     }
 
-    // GET /ventas/usuario/{id}
-    @GetMapping("/usuario/{id}")
-    public ResponseEntity<List<Venta>> obtenerVentasPorCliente(@PathVariable Long id) {
-        List<Venta> ventas = ventaService.obtenerVentasPorCliente(id);
-        if (ventas.isEmpty()) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarVenta(@PathVariable Long id) {
+        boolean eliminado = ventaService.eliminarVenta(id);
+        if (eliminado) {
+            return ResponseEntity.noContent().build();
+        } else {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(ventas);
-    }
-
-    // DELETE /ventas/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarVenta(@PathVariable Long id) {
-        boolean eliminada = ventaService.eliminarVenta(id);
-        return eliminada ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

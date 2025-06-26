@@ -3,6 +3,7 @@ package com.perfulandia.venta.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,4 +28,7 @@ public class Promocion {
     private LocalDateTime fechaFin;
 
     private boolean activa;
+
+    @ManyToMany(mappedBy = "promocionesAplicadas")
+    private List<Venta> ventas;
 }

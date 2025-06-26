@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 @Service
 public class VentaService {
 
@@ -101,4 +103,11 @@ public class VentaService {
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAll();
     }
+
+    public Venta obtenerVentaPorId(Long id) {
+        return ventaRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Venta no encontrada con id: " + id));
+    }
+    
+
 }
