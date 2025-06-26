@@ -8,8 +8,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SucursalDTO {
-    private Long id;
+
+        private long sucursalId;
+    
     private String nombre;
     private String direccion;
     private boolean activa;
+
 }

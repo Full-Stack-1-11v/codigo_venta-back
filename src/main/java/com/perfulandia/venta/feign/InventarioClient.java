@@ -1,16 +1,13 @@
 package com.perfulandia.venta.feign;
 
+import com.perfulandia.venta.dto.ProductoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
-import com.perfulandia.venta.dto.ProductoStockDTO;
-import com.perfulandia.venta.dto.ReducirStockDTO;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "inventario", url = "https://codigo-inventario-back-1.onrender.com")
+@FeignClient(name = "inventario-service", url = "https://codigo-inventario-back.onrender.com") // ajusta el puerto si es distinto
 public interface InventarioClient {
 
-    @GetMapping("/inventario/producto/{id}")
-    ProductoStockDTO obtenerStock(@PathVariable("id") Long productoId);
-
-    @PatchMapping("/inventario/reducir-stock")
-    void reducirStock(@RequestBody ReducirStockDTO dto);
+    @GetMapping("/productos/{id}")
+    ProductoDTO obtenerProductoPorId(@PathVariable("id") Long id);
 }

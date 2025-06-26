@@ -1,31 +1,82 @@
 package com.perfulandia.venta.controller;
 
+import com.perfulandia.venta.assembler.PromocionModelAssembler;
+import com.perfulandia.venta.model.Promocion;
 import com.perfulandia.venta.service.PromocionService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class PromocionControllerTest {
+@WebMvcTest(PromocionController.class)
+class PromocionControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private PromocionService promocionService;
 
-    @InjectMocks
-    private PromocionController promocionController;
+    @MockBean
+    private PromocionModelAssembler promocionModelAssembler;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @Test
+    void testGetTodasLasPromociones() throws Exception {
+        Promocion promo = new Promocion();
+        promo.setId(1L);
+
+        when(promocionService.obtenerTodas()).thenReturn(List.of(promo));
+        when(promocionModelAssembler.toModel(any(Promocion.class))).thenReturn(EntityModel.of(promo));
+
+        mockMvc.perform(get("/promociones"))
+               .andExpect(status().isOk());
     }
 
     @Test
-    void exampleTest() {
-        // Reemplaza esto con un test real
-        assertNotNull(promocionController);
+    void testGetPromocionPorId() throws Exception {
+        Promocion promo = new Promocion();
+        promo.setId(1L);
+
+        when(promocionService.obtenerPorId(1L)).thenReturn(Optional.of(promo));
+        when(promocionModelAssembler.toModel(any(Promocion.class))).thenReturn(EntityModel.of(promo));
+
+        mockMvc.perform(get("/promociones/1"))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    void testCrearPromocion() throws Exception {
+        Promocion promo = new Promocion();
+        promo.setId(1L);
+        promo.setCodigo("TEST10");
+        promo.setTipo("PORCENTAJE");
+        promo.setValor(10.0);
+
+        when(promocionService.crear(any(Promocion.class))).thenReturn(promo);
+        when(promocionModelAssembler.toModel(any(Promocion.class))).thenReturn(EntityModel.of(promo));
+
+        mockMvc.perform(post("/promociones")
+               .contentType("application/json")
+               .content("{\"codigo\":\"TEST10\",\"tipo\":\"PORCENTAJE\",\"valor\":10.0}"))
+               .andExpect(status().isCreated());
+    }
+
+    @Test
+    void testEliminarPromocion() throws Exception {
+        doNothing().when(promocionService).eliminar(1L);
+
+        mockMvc.perform(delete("/promociones/1"))
+               .andExpect(status().isNoContent());
     }
 }
+

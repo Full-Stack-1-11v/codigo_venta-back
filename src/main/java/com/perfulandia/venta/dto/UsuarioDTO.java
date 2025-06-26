@@ -12,7 +12,10 @@ import java.util.List;
 public class UsuarioDTO {
     private Long id;
     private String nombre;
-    private String email;
+    private String apellido;
+    private String rut;
+    private String correo;
+    private String direccion;
     private boolean activo; // ✅ Este campo es necesario para validar si el usuario está activo
     private List<RolDTO> roles;
 }
