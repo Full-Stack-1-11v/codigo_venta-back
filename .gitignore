@@ -1,0 +1,18 @@
+# Maven
+/target/
+
+
+
+# VSCode
+.vscode/
+
+
+
+
+
+# Environment
+.env
+.env.*
+
+
+
